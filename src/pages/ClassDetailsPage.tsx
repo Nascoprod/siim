@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Student, SchoolClass } from '@/types/school';
+import { Student, SchoolClass, Subject } from '@/types/school';
 import StudentForm from '@/components/school/StudentForm';
 import StudentTable from '@/components/school/StudentTable';
+import SubjectForm from '@/components/school/SubjectForm'; // Import SubjectForm
+import SubjectTable from '@/components/school/SubjectTable'; // Import SubjectTable
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { Plus, ArrowLeft, BookOpen } from 'lucide-react'; // Import BookOpen icon
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs components
 import { toast } from 'sonner';
 
 // Générateur d'identifiants uniques natif
@@ -21,9 +24,12 @@ const ClassDetailsPage: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]); // New state for subjects
   const [currentClass, setCurrentClass] = useState<SchoolClass | undefined>(undefined);
   const [isStudentFormOpen, setIsStudentFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | undefined>(undefined);
+  const [isSubjectFormOpen, setIsSubjectFormOpen] = useState(false); // New state for subject form dialog
+  const [editingSubject, setEditingSubject] = useState<Subject | undefined>(undefined); // New state for editing subject
 
   // Placeholder for fetching class details (in a real app, this would come from a backend)
   useEffect(() => {
@@ -39,11 +45,13 @@ const ClassDetailsPage: React.FC = () => {
     const foundClass = allClasses.find(c => c.id === classId);
     setCurrentClass(foundClass);
 
-    // Simulate fetching students for this class
+    // Simulate fetching students and subjects for this class
     // For now, let's just have an empty array or some dummy data
-    setStudents([]); 
+    setStudents([]);
+    setSubjects([]);
   }, [classId]);
 
+  // Student Handlers
   const handleAddStudent = (newStudentData: Omit<Student, 'id' | 'classId'>) => {
     if (!classId) {
       toast.error("Impossible d'ajouter l'élève : ID de classe manquant.");
@@ -78,8 +86,37 @@ const ClassDetailsPage: React.FC = () => {
   };
 
   const handlePrintReportCard = (student: Student) => {
-    toast.info(`Impression du bulletin pour ${student.firstName} ${student.lastName} (Fonctionnalité à venir).`);
-    // This will be implemented in a later step
+    // Navigate to student details page which will handle report card
+    navigate(`/dashboard/school/classes/${classId}/students/${student.id}`);
+  };
+
+  // Subject Handlers
+  const handleAddSubject = (newSubjectData: Omit<Subject, 'id'>) => {
+    if (editingSubject) {
+      setSubjects(prev =>
+        prev.map(s =>
+          s.id === editingSubject.id
+            ? { ...newSubjectData, id: s.id }
+            : s
+        )
+      );
+      setEditingSubject(undefined);
+      toast.success("Matière modifiée avec succès !");
+    } else {
+      setSubjects(prev => [...prev, { ...newSubjectData, id: generateId() }]);
+      toast.success("Matière ajoutée avec succès !");
+    }
+    setIsSubjectFormOpen(false);
+  };
+
+  const handleEditSubject = (subjectToEdit: Subject) => {
+    setEditingSubject(subjectToEdit);
+    setIsSubjectFormOpen(true);
+  };
+
+  const handleDeleteSubject = (id: string) => {
+    setSubjects(prev => prev.filter(s => s.id !== id));
+    toast.success("Matière supprimée avec succès !");
   };
 
   if (!currentClass) {
@@ -102,31 +139,63 @@ const ClassDetailsPage: React.FC = () => {
         <Button variant="outline" onClick={() => navigate('/dashboard/school')} className="bg-gray-200 text-gray-800 hover:bg-gray-300">
           <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux classes
         </Button>
-        <h1 className="text-4xl font-bold text-primary-erp">Gestion des élèves de {currentClass.name}</h1>
+        <h1 className="text-4xl font-bold text-primary-erp">Gestion de la classe {currentClass.name}</h1>
         <div></div> {/* Spacer for alignment */}
       </div>
 
-      <Card className="bg-white shadow-lg rounded-lg p-6">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold text-primary-erp flex items-center">
-            Liste des Élèves
-          </CardTitle>
-          <Button
-            onClick={() => { setIsStudentFormOpen(true); setEditingStudent(undefined); }}
-            className="bg-primary-erp hover:bg-primary-erp/90 text-primary-erp-foreground"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter Élève
-          </Button>
-        </CardHeader>
-        <CardContent className="mt-4">
-          <StudentTable
-            students={students}
-            onEdit={handleEditStudent}
-            onDelete={handleDeleteStudent}
-            onPrintReportCard={handlePrintReportCard}
-          />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="students" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-primary-erp/10 text-primary-erp">
+          <TabsTrigger value="students" className="data-[state=active]:bg-primary-erp data-[state=active]:text-primary-erp-foreground">Élèves</TabsTrigger>
+          <TabsTrigger value="subjects" className="data-[state=active]:bg-primary-erp data-[state=active]:text-primary-erp-foreground">Matières</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="students">
+          <Card className="bg-white shadow-lg rounded-lg p-6 mt-4">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold text-primary-erp flex items-center">
+                Liste des Élèves
+              </CardTitle>
+              <Button
+                onClick={() => { setIsStudentFormOpen(true); setEditingStudent(undefined); }}
+                className="bg-primary-erp hover:bg-primary-erp/90 text-primary-erp-foreground"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Ajouter Élève
+              </Button>
+            </CardHeader>
+            <CardContent className="mt-4">
+              <StudentTable
+                students={students}
+                onEdit={handleEditStudent}
+                onDelete={handleDeleteStudent}
+                onPrintReportCard={handlePrintReportCard} // This will now navigate
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subjects">
+          <Card className="bg-white shadow-lg rounded-lg p-6 mt-4">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold text-primary-erp flex items-center">
+                <BookOpen className="mr-2 h-6 w-6" /> Liste des Matières
+              </CardTitle>
+              <Button
+                onClick={() => { setIsSubjectFormOpen(true); setEditingSubject(undefined); }}
+                className="bg-primary-erp hover:bg-primary-erp/90 text-primary-erp-foreground"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Ajouter Matière
+              </Button>
+            </CardHeader>
+            <CardContent className="mt-4">
+              <SubjectTable
+                subjects={subjects}
+                onEdit={handleEditSubject}
+                onDelete={handleDeleteSubject}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Student Form Dialog */}
       <Dialog open={isStudentFormOpen} onOpenChange={setIsStudentFormOpen}>
@@ -140,6 +209,23 @@ const ClassDetailsPage: React.FC = () => {
             onCancel={() => {
               setIsStudentFormOpen(false);
               setEditingStudent(undefined);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Subject Form Dialog */}
+      <Dialog open={isSubjectFormOpen} onOpenChange={setIsSubjectFormOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-white text-primary-erp">
+          <DialogHeader>
+            <DialogTitle>{editingSubject ? "Modifier la matière" : "Ajouter une nouvelle matière"}</DialogTitle>
+          </DialogHeader>
+          <SubjectForm
+            onSubmit={handleAddSubject}
+            initialData={editingSubject}
+            onCancel={() => {
+              setIsSubjectFormOpen(false);
+              setEditingSubject(undefined);
             }}
           />
         </DialogContent>

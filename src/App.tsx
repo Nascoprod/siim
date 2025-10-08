@@ -13,8 +13,9 @@ import ImmobilierPage from "./pages/ImmobilierPage";
 import ParcAutoPage from "./pages/ParcAutoPage";
 import DevisFacturesPage from "./pages/DevisFacturesPage";
 import ConfigurationPage from "./pages/ConfigurationPage";
-import SchoolPage from "./pages/SchoolPage"; // Import the new SchoolPage
-import ClassDetailsPage from "./pages/ClassDetailsPage"; // Import the new ClassDetailsPage
+import SchoolPage from "./pages/SchoolPage";
+import ClassDetailsPage from "./pages/ClassDetailsPage";
+import StudentDetailsPage from "./pages/StudentDetailsPage"; // Import the new StudentDetailsPage
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,8 +31,9 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
-            <Route path="school" element={<SchoolPage />} /> {/* Add route for SchoolPage */}
-            <Route path="school/classes/:classId" element={<ClassDetailsPage />} /> {/* Add route for ClassDetailsPage */}
+            <Route path="school" element={<SchoolPage />} />
+            <Route path="school/classes/:classId" element={<ClassDetailsPage />} />
+            <Route path="school/classes/:classId/students/:studentId" element={<StudentDetailsPage />} /> {/* Add route for StudentDetailsPage */}
             <Route path="finance" element={<FinancePage />} />
             <Route path="personnel" element={<PersonnelPage />} />
             <Route path="stock" element={<StockPage />} />
