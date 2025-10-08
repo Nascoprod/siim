@@ -9,7 +9,9 @@ import DashboardPage from "./pages/DashboardPage";
 import FinancePage from "./pages/FinancePage";
 import PersonnelPage from "./pages/PersonnelPage";
 import StockPage from "./pages/StockPage";
-import ImmobilierPage from "./pages/ImmobilierPage"; // Import the new ImmobilierPage
+import ImmobilierPage from "./pages/ImmobilierPage";
+import ParcAutoPage from "./pages/ParcAutoPage";
+import DevisFacturesPage from "./pages/DevisFacturesPage"; // Import the new DevisFacturesPage
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,9 +30,11 @@ const App = () => (
             <Route path="finance" element={<FinancePage />} />
             <Route path="personnel" element={<PersonnelPage />} />
             <Route path="stock" element={<StockPage />} />
-            <Route path="immobilier" element={<ImmobilierPage />} /> {/* Add route for ImmobilierPage */}
+            <Route path="immobilier" element={<ImmobilierPage />} />
+            <Route path="parc-auto" element={<ParcAutoPage />} />
+            <Route path="devis-factures" element={<DevisFacturesPage />} /> {/* Add route for DevisFacturesPage */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            {/* Future routes for Parc Auto, Devis & Factures, Configuration will go here */}
+            {/* Future routes for Configuration will go here */}
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
