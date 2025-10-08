@@ -8,7 +8,8 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
 import FinancePage from "./pages/FinancePage";
 import PersonnelPage from "./pages/PersonnelPage";
-import StockPage from "./pages/StockPage"; // Import the new StockPage
+import StockPage from "./pages/StockPage";
+import ImmobilierPage from "./pages/ImmobilierPage"; // Import the new ImmobilierPage
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,9 +27,10 @@ const App = () => (
             <Route index element={<DashboardPage />} />
             <Route path="finance" element={<FinancePage />} />
             <Route path="personnel" element={<PersonnelPage />} />
-            <Route path="stock" element={<StockPage />} /> {/* Add route for StockPage */}
+            <Route path="stock" element={<StockPage />} />
+            <Route path="immobilier" element={<ImmobilierPage />} /> {/* Add route for ImmobilierPage */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            {/* Future routes for Immobilier, Parc Auto, Devis & Factures, Configuration will go here */}
+            {/* Future routes for Parc Auto, Devis & Factures, Configuration will go here */}
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

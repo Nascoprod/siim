@@ -1,6 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Package, Plus } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,15 @@ import StockTable from '@/components/stock/StockTable';
 import { StockItem, StockMovement } from '@/types/stock';
 import { toast } from 'sonner';
 
-const StockPage = () => {
+// ✅ Générateur d'identifiants uniques natif (remplace uuid)
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 11);
+};
+
+const StockPage: React.FC = () => {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [isItemFormOpen, setIsItemFormOpen] = useState(false);
@@ -18,12 +25,17 @@ const StockPage = () => {
   const [editingItem, setEditingItem] = useState<StockItem | undefined>(undefined);
   const [selectedItemIdForMovement, setSelectedItemIdForMovement] = useState<string | undefined>(undefined);
 
+  // ✅ Gestion des articles
   const handleAddItem = (newItem: Omit<StockItem, 'id'>) => {
     if (editingItem) {
-      setStockItems(stockItems.map(item => item.id === editingItem.id ? { ...newItem, id: item.id } : item));
+      setStockItems((prev) =>
+        prev.map((item) => item.id === editingItem.id ? { ...newItem, id: item.id } : item)
+      );
       setEditingItem(undefined);
+      toast.success("Article modifié avec succès !");
     } else {
-      setStockItems([...stockItems, { ...newItem, id: uuidv4() }]);
+      setStockItems((prev) => [...prev, { ...newItem, id: generateId() }]);
+      toast.success("Article ajouté avec succès !");
     }
     setIsItemFormOpen(false);
   };
@@ -38,24 +50,23 @@ const StockPage = () => {
     toast.success("Article supprimé avec succès !");
   };
 
+  // ✅ Gestion des mouvements
   const handleAddMovement = (movement: Omit<StockMovement, 'id' | 'itemId'>) => {
     if (!selectedItemIdForMovement) {
       toast.error("Aucun article sélectionné pour le mouvement.");
       return;
     }
 
-    const newMovement: StockMovement = { ...movement, id: uuidv4(), itemId: selectedItemIdForMovement };
+    const newMovement: StockMovement = { ...movement, id: generateId(), itemId: selectedItemIdForMovement };
     setStockMovements([...stockMovements, newMovement]);
 
     setStockItems(prevItems =>
       prevItems.map(item => {
         if (item.id === selectedItemIdForMovement) {
           let newQuantity = item.quantiteActuelle;
-          if (newMovement.type === 'entree') {
-            newQuantity += newMovement.quantite;
-          } else {
-            newQuantity -= newMovement.quantite;
-          }
+          if (newMovement.type === 'entree') newQuantity += newMovement.quantite;
+          else newQuantity -= newMovement.quantite;
+
           if (newQuantity < 0) {
             toast.error("La quantité en stock ne peut pas être négative.");
             return item; // Prevent negative stock
@@ -65,6 +76,7 @@ const StockPage = () => {
         return item;
       })
     );
+
     setIsMovementFormOpen(false);
     setSelectedItemIdForMovement(undefined);
   };
@@ -83,7 +95,10 @@ const StockPage = () => {
           <CardTitle className="text-2xl font-bold text-primary-erp flex items-center">
             <Package className="mr-2 h-6 w-6" /> Articles en Stock
           </CardTitle>
-          <Button onClick={() => { setIsItemFormOpen(true); setEditingItem(undefined); }} className="bg-primary-erp hover:bg-primary-erp/90 text-primary-erp-foreground">
+          <Button
+            onClick={() => { setIsItemFormOpen(true); setEditingItem(undefined); }}
+            className="bg-primary-erp hover:bg-primary-erp/90 text-primary-erp-foreground"
+          >
             <Plus className="mr-2 h-4 w-4" /> Ajouter Article
           </Button>
         </CardHeader>
