@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, DollarSign, Users, Package, Building, Car, FileText, Settings, LogOut } from "lucide-react";
+import { Home, DollarSign, Users, Package, Building, Car, FileText, Settings, LogOut, School } from "lucide-react"; // Import School icon
 import { toast } from "sonner";
 
 const SidebarNav = () => {
@@ -20,6 +20,12 @@ const SidebarNav = () => {
         <Button variant="ghost" className="w-full justify-start text-lg text-primary-erp-foreground hover:bg-secondary-erp hover:text-white">
           <Home className="mr-3 h-5 w-5" />
           Tableau de bord
+        </Button>
+      </Link>
+      <Link to="/dashboard/school" className="w-full"> {/* New link for School module */}
+        <Button variant="ghost" className="w-full justify-start text-lg text-primary-erp-foreground hover:bg-secondary-erp hover:text-white">
+          <School className="mr-3 h-5 w-5" />
+          École
         </Button>
       </Link>
       <Link to="/dashboard/finance" className="w-full">
