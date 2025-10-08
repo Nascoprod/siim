@@ -1,18 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import FinanceCard from '@/components/finance/FinanceCard';
 import IncomeForm from '@/components/finance/IncomeForm';
 import IncomeTable from '@/components/finance/IncomeTable';
 import ExpenseForm from '@/components/finance/ExpenseForm';
 import ExpenseTable from '@/components/finance/ExpenseTable';
 import PointSummary from '@/components/finance/PointSummary';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Transaction } from '@/types/finance';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { Transaction } from '@/types/finance';
 
-const FinancePage = () => {
+// ✅ Générateur d'identifiants universel (compatible navigateur et Node)
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 11);
+};
+
+const FinancePage: React.FC = () => {
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false);
@@ -22,18 +28,33 @@ const FinancePage = () => {
   const [editingIncome, setEditingIncome] = useState<Transaction | undefined>(undefined);
   const [editingExpense, setEditingExpense] = useState<Transaction | undefined>(undefined);
 
-  const totalIncomes = useMemo(() => incomes.reduce((sum, t) => sum + t.prixTotal, 0), [incomes]);
-  const totalExpenses = useMemo(() => expenses.reduce((sum, t) => sum + t.prixTotal, 0), [expenses]);
+  // ✅ Totaux calculés automatiquement
+  const totalIncomes = useMemo(
+    () => incomes.reduce((sum, t) => sum + t.prixTotal, 0),
+    [incomes]
+  );
+  const totalExpenses = useMemo(
+    () => expenses.reduce((sum, t) => sum + t.prixTotal, 0),
+    [expenses]
+  );
   const totalCash = useMemo(() => totalIncomes - totalExpenses, [totalIncomes, totalExpenses]);
 
+  // ✅ Gestion des revenus
   const handleAddIncome = (newIncome: Omit<Transaction, 'id' | 'type'>) => {
     if (editingIncome) {
-      setIncomes(incomes.map(inc => inc.id === editingIncome.id ? { ...newIncome, id: inc.id, type: 'income' } : inc));
+      setIncomes((prev) =>
+        prev.map((inc) =>
+          inc.id === editingIncome.id
+            ? { ...newIncome, id: inc.id, type: 'income' }
+            : inc
+        )
+      );
       setEditingIncome(undefined);
     } else {
-      setIncomes([...incomes, { ...newIncome, id: uuidv4(), type: 'income' }]);
+      setIncomes((prev) => [...prev, { ...newIncome, id: generateId(), type: 'income' }]);
     }
     setIsIncomeFormOpen(false);
+    toast.success(editingIncome ? "Revenu modifié avec succès !" : "Revenu ajouté !");
   };
 
   const handleEditIncome = (incomeToEdit: Transaction) => {
@@ -42,18 +63,26 @@ const FinancePage = () => {
   };
 
   const handleDeleteIncome = (id: string) => {
-    setIncomes(incomes.filter(income => income.id !== id));
+    setIncomes((prev) => prev.filter((income) => income.id !== id));
     toast.success("Revenu supprimé avec succès !");
   };
 
+  // ✅ Gestion des dépenses
   const handleAddExpense = (newExpense: Omit<Transaction, 'id' | 'type'>) => {
     if (editingExpense) {
-      setExpenses(expenses.map(exp => exp.id === editingExpense.id ? { ...newExpense, id: exp.id, type: 'expense' } : exp));
+      setExpenses((prev) =>
+        prev.map((exp) =>
+          exp.id === editingExpense.id
+            ? { ...newExpense, id: exp.id, type: 'expense' }
+            : exp
+        )
+      );
       setEditingExpense(undefined);
     } else {
-      setExpenses([...expenses, { ...newExpense, id: uuidv4(), type: 'expense' }]);
+      setExpenses((prev) => [...prev, { ...newExpense, id: generateId(), type: 'expense' }]);
     }
     setIsExpenseFormOpen(false);
+    toast.success(editingExpense ? "Dépense modifiée avec succès !" : "Dépense ajoutée !");
   };
 
   const handleEditExpense = (expenseToEdit: Transaction) => {
@@ -62,7 +91,7 @@ const FinancePage = () => {
   };
 
   const handleDeleteExpense = (id: string) => {
-    setExpenses(expenses.filter(expense => expense.id !== id));
+    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
     toast.success("Dépense supprimée avec succès !");
   };
 
@@ -70,6 +99,7 @@ const FinancePage = () => {
     <div className="space-y-8 p-6">
       <h1 className="text-4xl font-bold text-primary-erp mb-6">Module Finance</h1>
 
+      {/* ✅ Cartes principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <FinanceCard
           title="Entrées"
@@ -79,6 +109,7 @@ const FinancePage = () => {
           onAdd={() => setIsIncomeFormOpen(true)}
           className="bg-white shadow-md"
         />
+
         <FinanceCard
           title="Sorties"
           value={`${totalExpenses.toFixed(2)} €`}
@@ -87,19 +118,25 @@ const FinancePage = () => {
           onAdd={() => setIsExpenseFormOpen(true)}
           className="bg-white shadow-md"
         />
+
         <FinanceCard
           title="Point Caisse"
           value={`${totalCash.toFixed(2)} €`}
           icon={<DollarSign className="h-6 w-6 text-blue-600" />}
-          onView={() => toast.info("Le 'Point Caisse' est affiché ci-dessous.")} // Point summary is always visible
+          onView={() => toast.info("Le 'Point Caisse' est affiché ci-dessous.")}
           onAdd={() => toast.info("Le 'Point Caisse' est un résumé, pas une entrée directe.")}
           className="bg-white shadow-md"
         />
       </div>
 
-      <PointSummary totalIncomes={totalIncomes} totalExpenses={totalExpenses} totalCash={totalCash} />
+      {/* ✅ Résumé global */}
+      <PointSummary
+        totalIncomes={totalIncomes}
+        totalExpenses={totalExpenses}
+        totalCash={totalCash}
+      />
 
-      {/* Income Form Dialog */}
+      {/* ✅ Dialog Revenu */}
       <Dialog open={isIncomeFormOpen} onOpenChange={setIsIncomeFormOpen}>
         <DialogContent className="sm:max-w-[425px] bg-white text-primary-erp">
           <DialogHeader>
@@ -116,7 +153,7 @@ const FinancePage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Income Table Dialog */}
+      {/* ✅ Table des revenus */}
       <Dialog open={isIncomeTableOpen} onOpenChange={setIsIncomeTableOpen}>
         <DialogContent className="sm:max-w-4xl bg-white text-primary-erp">
           <DialogHeader>
@@ -126,7 +163,7 @@ const FinancePage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Expense Form Dialog */}
+      {/* ✅ Dialog Dépense */}
       <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
         <DialogContent className="sm:max-w-[425px] bg-white text-primary-erp">
           <DialogHeader>
@@ -143,7 +180,7 @@ const FinancePage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Expense Table Dialog */}
+      {/* ✅ Table des dépenses */}
       <Dialog open={isExpenseTableOpen} onOpenChange={setIsExpenseTableOpen}>
         <DialogContent className="sm:max-w-4xl bg-white text-primary-erp">
           <DialogHeader>

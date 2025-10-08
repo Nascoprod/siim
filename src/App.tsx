@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
-import FinancePage from "./pages/FinancePage"; // Import the new FinancePage
+import FinancePage from "./pages/FinancePage";
+import PersonnelPage from "./pages/PersonnelPage";
+import StockPage from "./pages/StockPage"; // Import the new StockPage
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,9 +24,11 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
-            <Route path="finance" element={<FinancePage />} /> {/* Add route for FinancePage */}
+            <Route path="finance" element={<FinancePage />} />
+            <Route path="personnel" element={<PersonnelPage />} />
+            <Route path="stock" element={<StockPage />} /> {/* Add route for StockPage */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            {/* Future routes for Personnel, Stock, etc. will go here */}
+            {/* Future routes for Immobilier, Parc Auto, Devis & Factures, Configuration will go here */}
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
