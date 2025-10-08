@@ -62,6 +62,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Custom ERP colors
+        'primary-erp': {
+          DEFAULT: '#560250',
+          foreground: '#ffffff',
+        },
+        'secondary-erp': {
+          DEFAULT: '#d32126',
+          foreground: '#ffffff',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
