@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { FileText, Plus } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +11,15 @@ import InvoiceTable from '@/components/devisfactures/InvoiceTable';
 import { Quote, Invoice } from '@/types/devisfactures';
 import { toast } from 'sonner';
 
-const DevisFacturesPage = () => {
+// ✅ Générateur d'ID unique natif
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 11);
+};
+
+const DevisFacturesPage: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isQuoteFormOpen, setIsQuoteFormOpen] = useState(false);
@@ -26,8 +33,10 @@ const DevisFacturesPage = () => {
     if (editingQuote) {
       setQuotes(quotes.map(q => q.id === editingQuote.id ? { ...newQuote, id: q.id } : q));
       setEditingQuote(undefined);
+      toast.success("Devis modifié avec succès !");
     } else {
-      setQuotes([...quotes, { ...newQuote, id: uuidv4() }]);
+      setQuotes([...quotes, { ...newQuote, id: generateId() }]);
+      toast.success("Devis créé avec succès !");
     }
     setIsQuoteFormOpen(false);
   };
@@ -45,7 +54,6 @@ const DevisFacturesPage = () => {
   const handleConvertToInvoice = (quote: Quote) => {
     setQuoteToInvoice(quote);
     setIsInvoiceFormOpen(true);
-    // Optionally, update quote status to 'facturé' immediately or after invoice creation
     setQuotes(quotes.map(q => q.id === quote.id ? { ...q, statut: 'facturé' } : q));
   };
 
@@ -54,11 +62,13 @@ const DevisFacturesPage = () => {
     if (editingInvoice) {
       setInvoices(invoices.map(inv => inv.id === editingInvoice.id ? { ...newInvoice, id: inv.id } : inv));
       setEditingInvoice(undefined);
+      toast.success("Facture modifiée avec succès !");
     } else {
-      setInvoices([...invoices, { ...newInvoice, id: uuidv4() }]);
+      setInvoices([...invoices, { ...newInvoice, id: generateId() }]);
+      toast.success("Facture créée avec succès !");
     }
     setIsInvoiceFormOpen(false);
-    setQuoteToInvoice(undefined); // Clear quote data after invoice creation
+    setQuoteToInvoice(undefined);
   };
 
   const handleEditInvoice = (invoiceToEdit: Invoice) => {

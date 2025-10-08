@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Car, Plus } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,15 @@ import MaintenanceHistoryDialog from '@/components/parcauto/MaintenanceHistoryDi
 import { Vehicle, Maintenance } from '@/types/parcauto';
 import { toast } from 'sonner';
 
-const ParcAutoPage = () => {
+// ✅ Générateur d'ID unique natif (remplace uuid)
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 11);
+};
+
+const ParcAutoPage: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [maintenances, setMaintenances] = useState<Maintenance[]>([]);
   const [isVehicleFormOpen, setIsVehicleFormOpen] = useState(false);
@@ -22,10 +29,12 @@ const ParcAutoPage = () => {
 
   const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) => {
     if (editingVehicle) {
-      setVehicles(vehicles.map(v => v.id === editingVehicle.id ? { ...newVehicle, id: v.id } : v));
+      setVehicles(prev => prev.map(v => v.id === editingVehicle.id ? { ...newVehicle, id: v.id } : v));
       setEditingVehicle(undefined);
+      toast.success("Véhicule modifié avec succès !");
     } else {
-      setVehicles([...vehicles, { ...newVehicle, id: uuidv4() }]);
+      setVehicles(prev => [...prev, { ...newVehicle, id: generateId() }]);
+      toast.success("Véhicule ajouté avec succès !");
     }
     setIsVehicleFormOpen(false);
   };
@@ -36,8 +45,8 @@ const ParcAutoPage = () => {
   };
 
   const handleDeleteVehicle = (id: string) => {
-    setVehicles(vehicles.filter(v => v.id !== id));
-    setMaintenances(maintenances.filter(m => m.vehicleId !== id)); // Also delete associated maintenances
+    setVehicles(prev => prev.filter(v => v.id !== id));
+    setMaintenances(prev => prev.filter(m => m.vehicleId !== id));
     toast.success("Véhicule supprimé avec succès !");
   };
 
@@ -46,9 +55,13 @@ const ParcAutoPage = () => {
       toast.error("Aucun véhicule sélectionné pour la maintenance.");
       return;
     }
-    setMaintenances([...maintenances, { ...newMaintenance, id: uuidv4(), vehicleId: selectedVehicleForMaintenance.id }]);
+    setMaintenances(prev => [
+      ...prev,
+      { ...newMaintenance, id: generateId(), vehicleId: selectedVehicleForMaintenance.id }
+    ]);
     setIsMaintenanceFormOpen(false);
     setSelectedVehicleForMaintenance(null);
+    toast.success("Maintenance ajoutée avec succès !");
   };
 
   const openMaintenanceFormForVehicle = (vehicleId: string) => {
