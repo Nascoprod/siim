@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./components/layout/DashboardLayout";
-import DashboardPage from "./pages/DashboardPage"; // Renamed from Index
+import DashboardPage from "./pages/DashboardPage";
+import FinancePage from "./pages/FinancePage"; // Import the new FinancePage
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,8 +22,9 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
+            <Route path="finance" element={<FinancePage />} /> {/* Add route for FinancePage */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            {/* Future routes for Finance, Personnel, Stock, etc. will go here */}
+            {/* Future routes for Personnel, Stock, etc. will go here */}
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
